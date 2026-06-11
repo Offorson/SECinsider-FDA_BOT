@@ -1,0 +1,26 @@
+name: test-telegram
+
+# Manual-only: posts a sample message to all four channels to confirm the bot
+# token + channel IDs deliver. Run it from the Actions tab via "Run workflow".
+on:
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Send Telegram test to all channels
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_SEC_PAID_CHANNEL: ${{ secrets.TELEGRAM_SEC_PAID_CHANNEL }}
+          TELEGRAM_SEC_FREE_CHANNEL: ${{ secrets.TELEGRAM_SEC_FREE_CHANNEL }}
+          TELEGRAM_FDA_PAID_CHANNEL: ${{ secrets.TELEGRAM_FDA_PAID_CHANNEL }}
+          TELEGRAM_FDA_FREE_CHANNEL: ${{ secrets.TELEGRAM_FDA_FREE_CHANNEL }}
+        run: python -m src.scripts.send_test
