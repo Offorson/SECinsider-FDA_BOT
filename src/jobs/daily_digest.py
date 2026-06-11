@@ -47,12 +47,12 @@ def _build_fda_digest(db, today) -> str | None:
     if not upcoming:
         return None
     upcoming.sort(key=lambda x: x[0])
-    lines = [f"🗓️ <b>Upcoming catalysts (next {DIGEST_WINDOW_DAYS} days)</b>"]
+    lines = [f"🗓️ <b>Upcoming Catalysts · Next {DIGEST_WINDOW_DAYS} Days</b>", ""]
     for d, c in upcoming:
-        rev = " ⚠️review" if c.get("needs_review") else ""
         drug = f" {escape_html(c['drug'])}" if c.get("drug") else ""
-        lines.append(f"• {escape_html(str(d))} — {escape_html(c.get('ticker') or '?')}"
-                     f"{drug} {escape_html(c.get('catalyst_type') or '')}{rev}")
+        lines.append(f"• <b>{d.strftime('%b %-d')}</b> — "
+                     f"${escape_html(c.get('ticker') or '?')}{drug} "
+                     f"<i>{escape_html(c.get('catalyst_type') or '')}</i>")
     return "\n".join(lines)
 
 
@@ -61,11 +61,11 @@ def _build_sec_digest(db) -> str | None:
     if not clusters:
         return None
     clusters.sort(key=lambda c: -(c.get("combined_value") or 0))
-    lines = ["🗓️ <b>Active insider clusters</b>"]
+    lines = ["📊 <b>Active Insider Clusters</b>", ""]
     for c in clusters:
-        lines.append(f"• {escape_html(c.get('ticker') or '?')} — "
-                     f"{c.get('member_count')} insiders, "
-                     f"${(c.get('combined_value') or 0):,.0f} combined")
+        lines.append(f"• <b>${escape_html(c.get('ticker') or '?')}</b> — "
+                     f"{c.get('member_count')} insiders · "
+                     f"<b>${(c.get('combined_value') or 0):,.0f}</b> combined")
     return "\n".join(lines)
 
 

@@ -128,94 +128,89 @@ class Summarizer:
         issuer = escape_html(str(f.get("issuer_name") or ""))
         count = f.get("member_count", 0)
         window = f.get("window_days", "?")
-        header_kind = "Cluster upgrade" if f.get("is_upgrade") else "Insider cluster buy"
-        emoji = "⬆️" if f.get("is_upgrade") else "🔔"
-        lines = [f"{emoji} <b>{header_kind}: {ticker}</b>"]
-        if issuer:
-            lines.append(escape_html(issuer))
         if f.get("is_upgrade"):
-            lines.append(f"Now <b>{count}</b> insiders (was {f.get('prev_count', '?')}) "
-                         f"buying within {window} days.")
+            lines = [f"⬆️ <b>Cluster Upgrade · ${ticker}</b>"]
         else:
-            lines.append(f"<b>{count}</b> distinct insiders bought within {window} days.")
-        lines.append(f"Combined value {_fmt_money(f.get('combined_value'))} · "
-                     f"avg {_fmt_price(f.get('avg_price'))}/sh")
+            lines = [f"🟢 <b>Insider Cluster Buy · ${ticker}</b>"]
+        if issuer:
+            lines.append(f"<i>{issuer}</i>")
+        lines.append("")
+        if f.get("is_upgrade"):
+            lines.append(f"Now <b>{count} insiders</b> (was {f.get('prev_count', '?')}) "
+                         f"buying within {window} days")
+        else:
+            lines.append(f"<b>{count} insiders</b> bought in the last {window} days")
+        summary = (f"Combined <b>{_fmt_money(f.get('combined_value'))}</b> · "
+                   f"avg {_fmt_price(f.get('avg_price'))}/sh")
         ft = f.get("first_time_count", 0)
         if ft:
-            lines.append(f"{ft} first-time buyer(s).")
+            summary += f" · {ft} first-time"
+        lines.append(summary)
         lines.append("")
         for b in f.get("buys", []):
-            tag = ""
-            if b.get("first_time"):
-                tag += " · first buy"
-            if b.get("new_stake"):
-                tag += " · new stake"
+            tag = " 🆕" if b.get("first_time") else ""
             lines.append(
-                "• " + escape_html(str(b.get("name", "Unknown"))) +
-                " (" + escape_html(str(b.get("roles", "insider"))) + ") — " +
+                "• <b>" + escape_html(str(b.get("name", "Unknown"))) + "</b> (" +
+                escape_html(str(b.get("roles", "insider"))) + ") — " +
                 _fmt_shares(b.get("shares")) + " sh @ " + _fmt_price(b.get("price")) +
-                " = " + _fmt_money(b.get("total_value")) + escape_html(tag)
-            )
+                " = <b>" + _fmt_money(b.get("total_value")) + "</b>" + tag)
         if f.get("catalyst_note"):
             lines.append("")
             lines.append(escape_html(f["catalyst_note"]))
         if f.get("source_url"):
             url = escape_html(f["source_url"])
             lines.append("")
-            lines.append(f'<a href="{url}">EDGAR filing</a>')
+            lines.append(f'🔗 <a href="{url}">View on EDGAR</a>')
         return "\n".join(lines)
 
     def _tmpl_single(self, f: dict) -> str:
         ticker = escape_html(str(f.get("ticker", "")))
         issuer = escape_html(str(f.get("issuer_name") or ""))
-        lines = [f"🔵 <b>Large insider buy: {ticker}</b> (non-cluster)"]
+        lines = [f"🔵 <b>Large Insider Buy · ${ticker}</b>"]
         if issuer:
-            lines.append(issuer)
+            lines.append(f"<i>{issuer}</i>")
+        lines.append("")
         name = escape_html(str(f.get("insider_name", "Unknown")))
         roles = escape_html(str(f.get("roles", "insider")))
-        lines.append(f"{name} ({roles})")
+        lines.append(f"<b>{name}</b> ({roles})")
         lines.append(
             _fmt_shares(f.get("shares")) + " sh @ " + _fmt_price(f.get("price")) +
-            " = " + _fmt_money(f.get("total_value"))
-        )
+            " = <b>" + _fmt_money(f.get("total_value")) + "</b>")
         reasons = []
         if f.get("first_time"):
-            reasons.append("first-ever recorded buy")
+            reasons.append("first recorded buy")
         if f.get("new_stake"):
             reasons.append("new stake")
         if f.get("conviction_ratio"):
             try:
-                reasons.append(f"conviction {float(f['conviction_ratio']):.2f}x prior holdings")
+                reasons.append(f"{float(f['conviction_ratio']):.2f}x prior stake")
             except (TypeError, ValueError):
                 pass
         if reasons:
-            lines.append("(" + escape_html("; ".join(reasons)) + ")")
+            lines.append("<i>" + escape_html(" · ".join(reasons)) + "</i>")
         if f.get("catalyst_note"):
             lines.append("")
             lines.append(escape_html(f["catalyst_note"]))
         if f.get("source_url"):
             url = escape_html(f["source_url"])
             lines.append("")
-            lines.append(f'<a href="{url}">EDGAR filing</a>')
+            lines.append(f'🔗 <a href="{url}">View on EDGAR</a>')
         return "\n".join(lines)
 
     def _tmpl_press(self, f: dict) -> str:
         title = escape_html(str(f.get("title", "")))
-        lines = ["📰 <b>FDA / catalyst news</b>"]
-        if f.get("ticker"):
-            lines[0] = f"📰 <b>FDA / catalyst news: {escape_html(str(f['ticker']))}</b>"
-        lines.append(title)
-        if f.get("matched"):
-            lines.append("Matched: " + escape_html(", ".join(f["matched"])))
-        if f.get("needs_review"):
-            lines.append("⚠️ Auto-captured — pending manual review.")
+        ticker = str(f.get("ticker") or "").strip()
+        head = "📰 <b>FDA / Catalyst News</b>"
+        if ticker:
+            head = f"📰 <b>${escape_html(ticker)}</b> · FDA / Catalyst News"
+        lines = [head, "", title]
         if f.get("catalyst_note"):
             lines.append("")
             lines.append(escape_html(f["catalyst_note"]))
         if f.get("link"):
             url = escape_html(f["link"])
             lines.append("")
-            lines.append(f'<a href="{url}">Read release</a>')
+            lines.append(f'🔗 <a href="{url}">Read the release</a>')
         return "\n".join(lines)
 
     # ----- GEMINI renderers (paraphrase only; structure stays template) -----

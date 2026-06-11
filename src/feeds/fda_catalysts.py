@@ -318,9 +318,19 @@ class FdaCatalystFeed:
 # ---------------------------------------------------------------------------
 # Reminder/overdue HTML (factual, template — these never use AI)
 # ---------------------------------------------------------------------------
+def _fmt_date(d) -> str:
+    from datetime import datetime
+    if not d:
+        return "TBD"
+    try:
+        return datetime.strptime(str(d)[:10], "%Y-%m-%d").strftime("%b %-d, %Y")
+    except ValueError:
+        return str(d)
+
+
 def _catalyst_line(c: dict) -> str:
     from src.core.telegram import escape_html
-    bits = [escape_html(c.get("ticker") or "?")]
+    bits = ["$" + escape_html(c.get("ticker") or "?")]
     if c.get("drug"):
         bits.append(escape_html(c["drug"]))
     bits.append(escape_html(c.get("catalyst_type") or "catalyst"))
@@ -330,22 +340,26 @@ def _catalyst_line(c: dict) -> str:
 def _reminder_html(c: dict, days_until: int) -> str:
     from src.core.telegram import escape_html
     when = "tomorrow" if days_until == 1 else ("in %d days" % days_until)
-    lines = ["⏰ <b>Catalyst reminder (%s): %s</b>" % (when, escape_html(c.get("ticker") or "?")),
+    lines = ["⏰ <b>Catalyst Reminder · %s</b>" % escape_html(when),
+             "",
              _catalyst_line(c),
-             "Expected date: %s" % escape_html(str(c.get("expected_date")))]
+             "Expected: <b>%s</b>" % escape_html(_fmt_date(c.get("expected_date")))]
     if c.get("source_url"):
         url = escape_html(c["source_url"])
-        lines.append('<a href="%s">Source</a>' % url)
+        lines.append("")
+        lines.append('🔗 <a href="%s">Source</a>' % url)
     return "\n".join(lines)
 
 
 def _overdue_html(c: dict) -> str:
     from src.core.telegram import escape_html
-    lines = ["⌛ <b>Decision overdue: %s</b>" % escape_html(c.get("ticker") or "?"),
+    lines = ["⌛ <b>Decision Overdue</b>",
+             "",
              _catalyst_line(c),
-             "Expected by %s — no announcement detected. Marked passed-unresolved."
-             % escape_html(str(c.get("expected_date")))]
+             "Expected by <b>%s</b> — no announcement detected yet."
+             % escape_html(_fmt_date(c.get("expected_date")))]
     if c.get("source_url"):
         url = escape_html(c["source_url"])
-        lines.append('<a href="%s">Source</a>' % url)
+        lines.append("")
+        lines.append('🔗 <a href="%s">Source</a>' % url)
     return "\n".join(lines)
