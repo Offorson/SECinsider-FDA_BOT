@@ -1,0 +1,21 @@
+ticker,company,drug,catalyst_type,expected_date,date_precision,source_url,status,needs_review,notes
+VRDN,Viridian Therapeutics,veligrotug,PDUFA,2026-06-30,day,https://www.businesswire.com/news/home/20251222159703/en/Viridian-Therapeutics-Announces-BLA-Acceptance-and-Priority-Review-for-Veligrotug-for-the-Treatment-of-Thyroid-Eye-Disease,upcoming,false,Thyroid eye disease; priority review
+SPRO,Spero Therapeutics,tebipenem HBr,PDUFA,2026-06-18,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2595,upcoming,true,Oral cUTI; partnered with GSK
+MRK,Merck,Welireg + Keytruda,PDUFA,2026-06-19,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2561,upcoming,true,Adjuvant clear cell RCC
+KNSA,Kiniksa Pharmaceuticals,Arcalyst,PDUFA,2026-06-19,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2598,upcoming,true,CDMO tech transfer to Samsung Biologics
+REGN,Regeneron,Arcalyst,PDUFA,2026-06-19,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2599,upcoming,true,CDMO tech transfer; co-holder with Kiniksa
+ACHV,Achieve Life Sciences,cytisinicline,PDUFA,2026-06-20,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2482,upcoming,true,Smoking cessation; company guided to expect a CRL
+UNCY,Unicycive Therapeutics,oxylanthanum carbonate,PDUFA,2026-06-29,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2545,upcoming,true,Hyperphosphatemia; resubmitted NDA
+ARQT,Arcutis Biotherapeutics,ZORYVE cream 0.3%,PDUFA,2026-06-29,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2505,upcoming,true,Pediatric plaque psoriasis sNDA
+LNTH,Lantheus Holdings,LNTH-2501 (Ga-68 edotreotide),PDUFA,2026-06-29,day,https://www.rttnews.com/corpinfo/fdacalendar.aspx?PageNum=6,upcoming,true,Neuroendocrine-tumor PET imaging
+VERA,Vera Therapeutics,atacicept,PDUFA,2026-07-07,day,https://www.sec.gov/Archives/edgar/data/0001831828/000119312526210351/vera-ex99_1.htm,upcoming,false,IgA nephropathy; priority review
+CELC,Celcuity,gedatolisib,PDUFA,2026-07-17,day,https://www.globenewswire.com/news-release/2026/01/20/3221601/0/en/Celcuity-Announces-FDA-Acceptance-of-New-Drug-Application-for-Gedatolisib-in-HR-HER2-PIK3CA-Wild-Type-Advanced-Breast-Cancer.html,upcoming,false,HR+/HER2- PIK3CA wild-type breast cancer; priority review
+SNY,Sanofi,subcutaneous Sarclisa (isatuximab),PDUFA,2026-07-23,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2522,upcoming,true,Multiple myeloma; decision postponed 3 months
+BIIB,Biogen,Leqembi Iqlik (lecanemab),PDUFA,2026-08-24,day,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2542,upcoming,true,Early Alzheimer's weekly maintenance; extended 3 months
+ROIV,Roivant (Priovant),brepocitinib,PDUFA,2026-09,month,https://www.sec.gov/Archives/edgar/data/0001635088/000114036126007447/ef20066998_ex99-1.htm,upcoming,true,Dermatomyositis; Q3 2026 per company; Priovant JV
+NUVL,Nuvalent,zidesamtinib,PDUFA,2026-09-18,day,https://www.prnewswire.com/news-releases/nuvalent-announces-fda-acceptance-of-new-drug-application-for-zidesamtinib-for-the-treatment-of-tki-pre-treated-patients-with-advanced-ros1-positive-nsclc-302620883.html,upcoming,false,ROS1+ NSCLC; verified via 8-K
+BTAI,BioXcel Therapeutics,BXCL501 (dexmedetomidine),PDUFA,2026-11-14,day,https://www.sec.gov/Archives/edgar/data/1720893/000110465926038174/tm2610820d1_8k.htm,upcoming,true,Agitation (bipolar/schizophrenia); confirm exact indication
+BBIO,BridgeBio Pharma,BBP-418,PDUFA,2026-11-27,day,https://www.sec.gov/Archives/edgar/data/0001743881/000114036126022979/ef20074977_ex99-1.htm,upcoming,false,Limb-girdle muscular dystrophy 2I/R9; priority review
+AZN,AstraZeneca,baxdrostat,PDUFA,2026-06,month,https://www.rttnews.com/corpinfo/FDADetail.aspx?ID=2509,upcoming,true,Hard-to-control hypertension; Q2 2026 pending (timing soft)
+PRAX,Praxis Precision Medicines,ulixacaltamide,PDUFA,2027-01-29,day,https://ir.praxismedicines.com/news-releases/news-release-details/praxis-precision-medicines-announces-fda-acceptance-new-drug,upcoming,false,Essential tremor; no AdCom planned
+MRNA,Moderna,mRNA-1010 (MFLUSIVA),AdCom,2026-06-18,day,https://www.fda.gov/advisory-committees/advisory-committee-calendar/vaccines-and-related-biological-products-advisory-committee-june-18-2026-meeting-announcement,upcoming,false,"VRBPAC; mRNA influenza vaccine, adults 50+"
