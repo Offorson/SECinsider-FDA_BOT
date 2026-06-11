@@ -73,8 +73,4 @@ delivery:
 
 idempotency:
   # A claimed-but-unsent alert older than this is considered crash-orphaned and is
-  # retried. Keeps "never duplicate" while still recovering lost sends. See README.
-  pending_stale_minutes: 30
-
-backfill:
-  default_days: 90
+  # retried. Keeps "never duplicate" while still recovering lost sends
