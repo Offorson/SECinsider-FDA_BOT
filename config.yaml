@@ -18,14 +18,18 @@ sec:
   user_agent_app: "${SEC_APP_NAME}"
   user_agent_email: "${SEC_CONTACT_EMAIL}"
   min_total_value: 25000     # ignore qualifying buys smaller than this (USD)
+  max_open_market_value: 50000000   # sanity ceiling: a single buy above this is treated as
+                                     # non-open-market (merger/issuance/PIPE miscoded as code P)
   qualifying_txn_codes: ["P"]            # open-market purchase only
   excluded_txn_codes: ["A", "M", "F", "G", "S"]
   cluster:
     window_days: 14
     min_distinct_insiders: 3
   standalone:
-    large_buy_value: 500000              # standalone (non-cluster) alert threshold
+    large_buy_value: 1000000             # standalone (non-cluster) alert threshold
     alert_first_time_ceo_cfo: true       # always alert a first-ever CEO/CFO buy
+    require_officer_or_director: true    # standalone large buys must be an officer/director
+                                         # (skip 10%-owner institutions / PIPEs)
   role_weights:
     ceo: 3.0
     cfo: 3.0

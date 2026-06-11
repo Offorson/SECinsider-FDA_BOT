@@ -408,6 +408,19 @@ def build_buy_record(parsed: ParsedForm4, accession: str, source_url: str,
 # ---------------------------------------------------------------------------
 # The feed orchestrator
 # ---------------------------------------------------------------------------
+_TICKER_OK = re.compile(r"^[A-Z][A-Z.\-]{0,5}$")
+
+
+def _valid_ticker(t: str) -> bool:
+    """Reject empty / placeholder / non-symbol tickers (e.g. 'N/A', 'NONE')."""
+    if not t:
+        return False
+    t = t.strip().upper()
+    if t in {"N/A", "NA", "NONE", "N.A.", "-", "."}:
+        return False
+    return bool(_TICKER_OK.match(t))
+
+
 class SecForm4Feed:
     def __init__(self, cfg) -> None:
         self.cfg = cfg
@@ -418,6 +431,11 @@ class SecForm4Feed:
         self.min_insiders = self.sec["cluster"]["min_distinct_insiders"]
         self.large_value = self.sec["standalone"]["large_buy_value"]
         self.alert_first_ceo_cfo = self.sec["standalone"]["alert_first_time_ceo_cfo"]
+        self.require_officer_or_director = self.sec["standalone"].get(
+            "require_officer_or_director", True)
+        # per-buy sanity ceiling: amounts above this are almost always non-open-
+        # market events (mergers, share issuances, PIPEs) miscoded as code P.
+        self.max_open_market_value = self.sec.get("max_open_market_value", 50000000)
         self.cross_window = cfg["fda"]["cross_feed_window_days"]
         ch = cfg["delivery"]["channels"]
         self.paid_channel = ch["sec_paid"]
@@ -457,6 +475,14 @@ class SecForm4Feed:
 
             if buy is None:
                 stats.inc("not_purchase")
+                continue
+            if not _valid_ticker(buy["ticker"]):
+                stats.inc("invalid_ticker")
+                continue
+            if self.max_open_market_value and (buy["total_value"] or 0) > self.max_open_market_value:
+                # implausible as an open-market insider purchase -> almost always a
+                # merger/issuance/PIPE miscoded as code P. Drop it from signals.
+                stats.inc("over_sanity_ceiling")
                 continue
             if (buy["total_value"] or 0) < self.min_value:
                 stats.inc("below_min_value")
@@ -548,7 +574,9 @@ class SecForm4Feed:
             db.update_cluster(active["id"], {"status": "closed"})
 
         for b in by_cik.values():
-            is_large = (b.get("total_value") or 0) >= self.large_value
+            is_officer_or_director = bool(b.get("is_officer") or b.get("is_director"))
+            is_large = ((b.get("total_value") or 0) >= self.large_value
+                        and (is_officer_or_director or not self.require_officer_or_director))
             is_first_ceo_cfo = (self.alert_first_ceo_cfo and b.get("first_time_buyer")
                                 and (b.get("role_weight") or 0) >= self.weights["cfo"])
             if not (is_large or is_first_ceo_cfo):
