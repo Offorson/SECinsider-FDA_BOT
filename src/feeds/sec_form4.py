@@ -550,8 +550,9 @@ class SecForm4Feed:
                 })
                 key = self._cluster_key(ticker, distinct)
                 html = summarizer.render_cluster(facts)
-                dispatcher.dispatch(key, "cluster", self.paid_channel,
-                                    self.free_channel, html, payload={"ticker": ticker})
+                if dispatcher.dispatch(key, "cluster", self.paid_channel,
+                                       self.free_channel, html, payload={"ticker": ticker}):
+                    db.record_alert_performance(key, "sec", "cluster", ticker, now_utc().date())
                 stats.inc("clusters_new")
             else:
                 prev_members = set(active.get("member_ciks") or [])
@@ -565,8 +566,9 @@ class SecForm4Feed:
                     })
                     key = self._cluster_key(ticker, distinct)
                     html = summarizer.render_cluster(facts)
-                    dispatcher.dispatch(key, "cluster_upgrade", self.paid_channel,
-                                        self.free_channel, html, payload={"ticker": ticker})
+                    if dispatcher.dispatch(key, "cluster_upgrade", self.paid_channel,
+                                           self.free_channel, html, payload={"ticker": ticker}):
+                        db.record_alert_performance(key, "sec", "cluster_upgrade", ticker, now_utc().date())
                     stats.inc("clusters_upgraded")
             return  # ticker is in a cluster -> no standalone alerts
 
@@ -598,6 +600,7 @@ class SecForm4Feed:
             html = summarizer.render_single_buy(facts)
             if dispatcher.dispatch(key, "single_buy", self.paid_channel,
                                    self.free_channel, html, payload={"ticker": ticker}):
+                db.record_alert_performance(key, "sec", "single_buy", ticker, now_utc().date())
                 stats.inc("single_buys")
 
     def _catalyst_note(self, db, ticker: str) -> Optional[str]:

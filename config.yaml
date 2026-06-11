@@ -83,3 +83,10 @@ idempotency:
 
 backfill:
   default_days: 90
+
+performance:
+  price_source: stooq                # free Stooq daily CSV endpoint; no API key
+  stooq_csv: "https://stooq.com/q/d/l/?s={symbol}&i=d"
+  recap_channel: sec_paid            # channel the weekly performance recap posts to
+  lookback_days: 90                  # recap covers alerts up to this old (= max window)
+  max_listed: 40                     # cap per-alert lines in the Telegram recap

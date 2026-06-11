@@ -228,6 +228,23 @@ class SupabaseBackend:
             {"released": True, "released_at": now_utc().isoformat()}
         ).eq("id", row_id).execute()
 
+    # ---- alert performance ------------------------------------------------
+    def record_alert_performance(self, dedup_key: str, feed: str, alert_type: str,
+                                 ticker: str, alert_date) -> bool:
+        row = {"dedup_key": dedup_key, "feed": feed, "alert_type": alert_type,
+               "ticker": ticker,
+               "alert_date": alert_date.isoformat() if hasattr(alert_date, "isoformat") else str(alert_date)}
+        return bool(self._insert_ignore("alert_performance", row))
+
+    def get_performance_rows(self, since_date: str) -> list[dict]:
+        res = (self.client.table("alert_performance").select("*")
+               .gte("alert_date", since_date).execute())
+        return res.data or []
+
+    def update_performance(self, perf_id: Any, fields: dict) -> None:
+        fields = {**fields, "updated_at": now_utc().isoformat()}
+        self.client.table("alert_performance").update(fields).eq("id", perf_id).execute()
+
 
 # ============================================================================
 #  In-memory backend (dry-run / offline only)
@@ -242,6 +259,7 @@ class MemoryBackend:
         self.press: set[str] = set()
         self.alerts: dict[str, dict] = {}
         self.delayed: list[dict] = []
+        self.performance: dict[str, dict] = {}
         self._seq = 0
 
     def _next_id(self) -> int:
@@ -402,6 +420,26 @@ class MemoryBackend:
         for d in self.delayed:
             if d["id"] == row_id:
                 d["released"] = True
+
+    # ---- alert performance ------------------------------------------------
+    def record_alert_performance(self, dedup_key: str, feed: str, alert_type: str,
+                                 ticker: str, alert_date) -> bool:
+        if dedup_key in self.performance:
+            return False
+        self.performance[dedup_key] = {"id": self._next_id(), "dedup_key": dedup_key,
+                                       "feed": feed, "alert_type": alert_type,
+                                       "ticker": ticker, "alert_date": str(alert_date)}
+        return True
+
+    def get_performance_rows(self, since_date: str) -> list[dict]:
+        return [dict(r) for r in self.performance.values()
+                if str(r["alert_date"]) >= str(since_date)]
+
+    def update_performance(self, perf_id, fields: dict) -> None:
+        for r in self.performance.values():
+            if r["id"] == perf_id:
+                r.update(fields)
+                return
 
 
 # ============================================================================

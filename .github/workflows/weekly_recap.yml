@@ -1,0 +1,35 @@
+name: weekly-recap
+
+# Weekly performance recap — Friday after US close (22:00 UTC ≈ 5pm ET).
+on:
+  schedule:
+    - cron: "0 22 * * 5"
+  workflow_dispatch: {}
+
+concurrency:
+  group: weekly-recap
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Weekly performance recap
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          SEC_APP_NAME: ${{ secrets.SEC_APP_NAME }}
+          SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
+          TELEGRAM_SEC_PAID_CHANNEL: ${{ secrets.TELEGRAM_SEC_PAID_CHANNEL }}
+          TELEGRAM_SEC_FREE_CHANNEL: ${{ secrets.TELEGRAM_SEC_FREE_CHANNEL }}
+          TELEGRAM_FDA_PAID_CHANNEL: ${{ secrets.TELEGRAM_FDA_PAID_CHANNEL }}
+          TELEGRAM_FDA_FREE_CHANNEL: ${{ secrets.TELEGRAM_FDA_FREE_CHANNEL }}
+        run: python -m src.jobs.weekly_recap

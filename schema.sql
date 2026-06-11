@@ -177,6 +177,31 @@ create table if not exists delayed_queue (
 );
 create index if not exists idx_delayed_due on delayed_queue (released, available_at);
 
+-- ---------------------------------------------------------------------------
+-- alert_performance: track record. One row per fired SEC alert (cluster /
+-- upgrade / single buy). The weekly recap job fills alert_price (close on the
+-- alert date) + 1W/1M/3M returns from a free price source. UNIQUE(dedup_key)
+-- ties it to the alert and keeps recording idempotent.
+-- ---------------------------------------------------------------------------
+create table if not exists alert_performance (
+    id              bigint generated always as identity primary key,
+    dedup_key       text not null unique,
+    feed            text,
+    alert_type      text,
+    ticker          text not null,
+    alert_date      date not null,
+    alert_price     numeric,
+    last_price      numeric,
+    last_priced_at  date,
+    ret_1w          numeric,
+    ret_1m          numeric,
+    ret_3m          numeric,
+    created_at      timestamptz not null default now(),
+    updated_at      timestamptz not null default now()
+);
+create index if not exists idx_alertperf_ticker on alert_performance (ticker);
+create index if not exists idx_alertperf_date on alert_performance (alert_date);
+
 -- =============================================================================
 --  End of schema.
 -- =============================================================================
