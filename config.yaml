@@ -90,3 +90,9 @@ performance:
   recap_channel: sec_paid            # channel the weekly performance recap posts to
   lookback_days: 90                  # recap covers alerts up to this old (= max window)
   max_listed: 40                     # cap per-alert lines in the Telegram recap
+
+fda_calendar:
+  week_days: 7                 # near-term "This week" horizon (days)
+  further_out_days: 30         # paid-only "Further out" horizon (days)
+  cross_signal_days: 30        # look-back for the insider-buying cross-signal (paid only)
+  pro_cta: "🔓 Pro members get the full 30-day calendar, insider cross-signals, and instant alerts."
