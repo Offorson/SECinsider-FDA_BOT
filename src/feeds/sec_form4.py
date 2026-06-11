@@ -431,6 +431,7 @@ class SecForm4Feed:
         self.min_insiders = self.sec["cluster"]["min_distinct_insiders"]
         self.large_value = self.sec["standalone"]["large_buy_value"]
         self.alert_first_ceo_cfo = self.sec["standalone"]["alert_first_time_ceo_cfo"]
+        self.first_time_min_value = self.sec["standalone"].get("first_time_min_value", 0)
         self.require_officer_or_director = self.sec["standalone"].get(
             "require_officer_or_director", True)
         # per-buy sanity ceiling: amounts above this are almost always non-open-
@@ -578,7 +579,8 @@ class SecForm4Feed:
             is_large = ((b.get("total_value") or 0) >= self.large_value
                         and (is_officer_or_director or not self.require_officer_or_director))
             is_first_ceo_cfo = (self.alert_first_ceo_cfo and b.get("first_time_buyer")
-                                and (b.get("role_weight") or 0) >= self.weights["cfo"])
+                                and (b.get("role_weight") or 0) >= self.weights["cfo"]
+                                and (b.get("total_value") or 0) >= self.first_time_min_value)
             if not (is_large or is_first_ceo_cfo):
                 continue
             facts = {

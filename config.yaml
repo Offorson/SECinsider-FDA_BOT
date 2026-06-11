@@ -28,6 +28,7 @@ sec:
   standalone:
     large_buy_value: 1000000             # standalone (non-cluster) alert threshold
     alert_first_time_ceo_cfo: true       # always alert a first-ever CEO/CFO buy
+    first_time_min_value: 50000          # ...but only when that first CEO/CFO buy is >= this (USD)
     require_officer_or_director: true    # standalone large buys must be an officer/director
                                          # (skip 10%-owner institutions / PIPEs)
   role_weights:
