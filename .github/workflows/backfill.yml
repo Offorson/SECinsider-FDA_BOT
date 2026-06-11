@@ -37,4 +37,4 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           SEC_APP_NAME: ${{ secrets.SEC_APP_NAME }}
           SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
-        run: python -m src.scripts.backfill_form4 --days ${{ inputs.days }} --max-filings ${{ inputs.max_filings }} --verbose
+        run: python -m src.scripts.backfill_form4 --days ${{ inputs.days }} --max-filings ${{ inputs.max_filings }}
