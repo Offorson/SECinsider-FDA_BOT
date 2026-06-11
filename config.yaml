@@ -1,0 +1,80 @@
+# =============================================================================
+#  config.yaml  —  ALL tunable parameters. NO SECRETS HERE.
+#  Any string value may reference an environment variable with ${VAR_NAME};
+#  it is expanded at load time (see src/core/config.py). This lets non-secret
+#  pointers (like channel IDs) stay out of the committed repo.
+# =============================================================================
+
+summarizer:
+  backend: template          # template | gemini | claude   (template = default, no API)
+  gemini_model: gemini-1.5-flash
+
+sec:
+  # Latest Form 4 filings, Atom feed. owner=include keeps reporting-owner filings.
+  # CONFIRM BEFORE LAUNCH (see README checklist).
+  feed_url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=4&output=atom&owner=include&count=100"
+  rate_limit_per_sec: 9      # HARD CAP — SEC fair-access limit is 10/s; we stay under.
+  request_timeout_sec: 20
+  user_agent_app: "${SEC_APP_NAME}"
+  user_agent_email: "${SEC_CONTACT_EMAIL}"
+  min_total_value: 25000     # ignore qualifying buys smaller than this (USD)
+  qualifying_txn_codes: ["P"]            # open-market purchase only
+  excluded_txn_codes: ["A", "M", "F", "G", "S"]
+  cluster:
+    window_days: 14
+    min_distinct_insiders: 3
+  standalone:
+    large_buy_value: 500000              # standalone (non-cluster) alert threshold
+    alert_first_time_ceo_cfo: true       # always alert a first-ever CEO/CFO buy
+  role_weights:
+    ceo: 3.0
+    cfo: 3.0
+    president: 2.5
+    coo: 2.5
+    other_c_suite: 2.0
+    director: 1.0
+    ten_percent_owner: 1.5
+
+fda:
+  # Press-release RSS feeds. URLs MUST be confirmed before launch (README checklist).
+  press_feeds:
+    - name: "globenewswire_health"
+      url: "https://www.globenewswire.com/RssFeed/subjectcode/22-Health/feedTitle/GlobeNewswire%20-%20Health"  # CONFIRM
+    - name: "prnewswire_health"
+      url: "https://www.prnewswire.com/rss/health-latest-news/health-latest-news-list.rss"                      # CONFIRM
+  keywords:
+    - "PDUFA"
+    - "FDA accepts"
+    - "FDA acceptance"
+    - "accepted for review"
+    - "target action date"
+    - "complete response letter"
+    - "FDA approves"
+    - "FDA approval"
+    - "topline results"
+    - "topline data"
+    - "advisory committee"
+    - "priority review"
+  clinicaltrials_api: "https://clinicaltrials.gov/api/v2/studies"
+  reminder_days: [30, 14, 7, 1]
+  cross_feed_window_days: 90
+  catalyst_types: ["PDUFA", "AdCom", "Phase 1", "Phase 2", "Phase 3", "CRL", "Approval", "Readout"]
+
+delivery:
+  disclaimer: "📋 Public filing data. Not investment advice."
+  delay_hours: 24
+  telegram_max_retries: 5
+  telegram_backoff_base_sec: 2
+  channels:
+    sec_paid: "${TELEGRAM_SEC_PAID_CHANNEL}"
+    sec_free: "${TELEGRAM_SEC_FREE_CHANNEL}"
+    fda_paid: "${TELEGRAM_FDA_PAID_CHANNEL}"
+    fda_free: "${TELEGRAM_FDA_FREE_CHANNEL}"
+
+idempotency:
+  # A claimed-but-unsent alert older than this is considered crash-orphaned and is
+  # retried. Keeps "never duplicate" while still recovering lost sends. See README.
+  pending_stale_minutes: 30
+
+backfill:
+  default_days: 90

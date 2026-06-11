@@ -1,0 +1,38 @@
+name: daily-digest
+
+# Daily reminders (T-30/14/7/1), overdue checks, and the upcoming-catalyst /
+# active-cluster digest. 13:30 UTC (~09:30 US Eastern). Adjust the cron to your
+# timezone if you like — it is in UTC.
+on:
+  schedule:
+    - cron: "30 13 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Daily digest + reminders
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SEC_APP_NAME: ${{ secrets.SEC_APP_NAME }}
+          SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
+          TELEGRAM_SEC_PAID_CHANNEL: ${{ secrets.TELEGRAM_SEC_PAID_CHANNEL }}
+          TELEGRAM_SEC_FREE_CHANNEL: ${{ secrets.TELEGRAM_SEC_FREE_CHANNEL }}
+          TELEGRAM_FDA_PAID_CHANNEL: ${{ secrets.TELEGRAM_FDA_PAID_CHANNEL }}
+          TELEGRAM_FDA_FREE_CHANNEL: ${{ secrets.TELEGRAM_FDA_FREE_CHANNEL }}
+        run: python -m src.jobs.daily_digest

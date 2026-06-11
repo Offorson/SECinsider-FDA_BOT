@@ -1,0 +1,34 @@
+name: release-delayed
+
+# Hourly: post 24h-delayed copies of alerts to the FREE channels.
+# Runs at :05 past each hour to avoid top-of-hour scheduler congestion.
+on:
+  schedule:
+    - cron: "5 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: release-delayed
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Release delayed alerts to free channels
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_SEC_PAID_CHANNEL: ${{ secrets.TELEGRAM_SEC_PAID_CHANNEL }}
+          TELEGRAM_SEC_FREE_CHANNEL: ${{ secrets.TELEGRAM_SEC_FREE_CHANNEL }}
+          TELEGRAM_FDA_PAID_CHANNEL: ${{ secrets.TELEGRAM_FDA_PAID_CHANNEL }}
+          TELEGRAM_FDA_FREE_CHANNEL: ${{ secrets.TELEGRAM_FDA_FREE_CHANNEL }}
+        run: python -m src.jobs.release_delayed

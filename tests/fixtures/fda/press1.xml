@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>GlobeNewswire Demo Health Feed</title>
+    <link>https://example.com/feed</link>
+    <description>Demo fixture feed for offline testing</description>
+    <item>
+      <title>Abcd Demo Bio Announces FDA Accepts NDA for Drugzumab; PDUFA Target Action Date Set for August 15, 2026 (NASDAQ: ABCD)</title>
+      <link>https://example.com/pr/abcd-pdufa</link>
+      <guid>https://example.com/pr/abcd-pdufa</guid>
+      <pubDate>Wed, 10 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Abcd Demo Bio Corp (NASDAQ: ABCD) today announced that the U.S. Food and Drug Administration has accepted for review its New Drug Application for Drugzumab. The FDA has set a PDUFA target action date of August 15, 2026.</description>
+    </item>
+    <item>
+      <title>Qrst Biosciences Receives Complete Response Letter from FDA for Trialide (NASDAQ: QRST)</title>
+      <link>https://example.com/pr/qrst-crl</link>
+      <guid>https://example.com/pr/qrst-crl</guid>
+      <pubDate>Wed, 10 Jun 2026 13:30:00 GMT</pubDate>
+      <description>Qrst Biosciences (NASDAQ: QRST) today announced it received a Complete Response Letter (CRL) from the FDA regarding its Biologics License Application for Trialide.</description>
+    </item>
+    <item>
+      <title>Generic Holdings Reports Second Quarter Financial Results and Earnings Beat</title>
+      <link>https://example.com/pr/generic-earnings</link>
+      <guid>https://example.com/pr/generic-earnings</guid>
+      <pubDate>Wed, 10 Jun 2026 14:00:00 GMT</pubDate>
+      <description>Generic Holdings Inc reported quarterly revenue growth and raised full-year guidance. No regulatory content.</description>
+    </item>
+  </channel>
+</rss>

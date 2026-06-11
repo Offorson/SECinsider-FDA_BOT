@@ -1,0 +1,6 @@
+ticker,company,drug,catalyst_type,expected_date,date_precision,source_url,status,notes
+ABCD,Abcd Demo Bio Corp,Drugzumab,PDUFA,2026-08-15,day,https://www.fda.gov/example/abcd,upcoming,Resubmission Class 2
+NVAX,Novax Demo Therapeutics Inc,NVX-101,PDUFA,2026-07-21,day,https://example.com/novax-pdufa,upcoming,Priority review
+WXYZ,Wxyz Pharma Inc,Examplemab,AdCom,2026-09,,https://example.com/wxyz-adcom,upcoming,Oncologic Drugs Advisory Committee
+QRST,Qrst Biosciences,Trialide,Phase 3,Q4 2026,,https://example.com/qrst-ph3,upcoming,Topline readout expected
+LMNO,Lmno Therapeutics,Healatron,Approval,August 2026,,https://example.com/lmno,upcoming,Accelerated approval pathway

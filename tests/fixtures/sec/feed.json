@@ -1,0 +1,14 @@
+[
+  {"accession": "0001111111-26-000001", "cik": 1234567, "file": "nvax_ceo.xml",
+   "title": "4 - Smith Jane (Reporting)", "index_url": "https://www.sec.gov/Archives/edgar/data/1234567/000111111126000001/0001111111-26-000001-index.htm"},
+  {"accession": "0002222222-26-000002", "cik": 1234567, "file": "nvax_cfo.xml",
+   "title": "4 - Doe John (Reporting)", "index_url": "https://www.sec.gov/Archives/edgar/data/1234567/000222222226000002/0002222222-26-000002-index.htm"},
+  {"accession": "0003333333-26-000003", "cik": 1234567, "file": "nvax_dir.xml",
+   "title": "4 - Brown Alice (Reporting)", "index_url": "https://www.sec.gov/Archives/edgar/data/1234567/000333333326000003/0003333333-26-000003-index.htm"},
+  {"accession": "0004444444-26-000004", "cik": 7654321, "file": "abcd_10pct.xml",
+   "title": "4 - Capital Partners LP (Reporting)", "index_url": "https://www.sec.gov/Archives/edgar/data/7654321/000444444426000004/0004444444-26-000004-index.htm"},
+  {"accession": "0005555555-26-000005", "cik": 9090909, "file": "excl_grant.xml",
+   "title": "4 - Green Bob (Reporting)", "index_url": "https://www.sec.gov/Archives/edgar/data/9090909/000555555526000005/0005555555-26-000005-index.htm"},
+  {"accession": "0006666666-26-000006", "cik": 8080808, "file": "tiny_small.xml",
+   "title": "4 - Little Sam (Reporting)", "index_url": "https://www.sec.gov/Archives/edgar/data/8080808/000666666626000006/0006666666-26-000006-index.htm"}
+]

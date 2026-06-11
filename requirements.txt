@@ -1,0 +1,13 @@
+# Core runtime dependencies (Python 3.11+)
+requests>=2.31.0
+PyYAML>=6.0.1
+python-dotenv>=1.0.1
+python-dateutil>=2.9.0
+feedparser>=6.0.11
+lxml>=5.2.0
+xmltodict>=0.13.0
+supabase>=2.4.0
+
+# Optional — only needed when summarizer.backend = "gemini".
+# Safe to install always; imported lazily so a missing key never breaks the template path.
+google-generativeai>=0.7.0
