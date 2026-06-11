@@ -1,0 +1,40 @@
+name: backfill
+
+# Manual-only: warm the cluster window + first-time-buyer history by pulling
+# recent Form 4 history into Supabase. Does NOT send alerts. Form 4s are very
+# high-volume, so this is capped to bound runtime. It is resumable — already-
+# stored filings are skipped, so you can run it again to reach further back.
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "How many days of Form 4 history to pull"
+        default: "7"
+        required: true
+      max_filings:
+        description: "Safety cap on filings processed (bounds runtime)"
+        default: "6000"
+        required: true
+
+concurrency:
+  group: backfill
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Backfill Form 4 history
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SEC_APP_NAME: ${{ secrets.SEC_APP_NAME }}
+          SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
+        run: python -m src.scripts.backfill_form4 --days ${{ inputs.days }} --max-filings ${{ inputs.max_filings }} --verbose

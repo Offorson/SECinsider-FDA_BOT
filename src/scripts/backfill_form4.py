@@ -92,7 +92,9 @@ def main(argv: list[str] | None = None) -> int:
     today = now_utc().date()
     processed = 0
 
-    for offset in range(days, 0, -1):
+    # newest day first, so a time-limited / capped run keeps the most
+    # recent (most relevant to the current cluster window) filings.
+    for offset in range(1, days + 1):
         d = today - timedelta(days=offset)
         url = daily_master_url(d)
         try:
