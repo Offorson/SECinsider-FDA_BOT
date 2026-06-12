@@ -6,7 +6,7 @@
 # =============================================================================
 
 summarizer:
-  backend: template          # template | gemini | claude   (template = default, no API)
+  backend: gemini            # template | gemini | claude   (gemini = AI paraphrase, template fallback)
   gemini_model: gemini-1.5-flash
 
 sec:

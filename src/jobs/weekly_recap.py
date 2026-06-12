@@ -38,7 +38,7 @@ def _fmt_pct(v):
 
 
 def price_and_score(db, source, today, rows, stats):
-    """Price every alert row, persist results, return a list of result dicts."""
+    """Price every alert row, persist results (incl. peak), return result dicts."""
     cache: dict[str, list] = {}
     results = []
     for r in rows:
@@ -55,7 +55,8 @@ def price_and_score(db, source, today, rows, stats):
         last = prices.last_close(hist)
         if last is None and r.get("last_price"):
             last = float(r["last_price"])
-        since = prices.pct_return(alert_price, last)   # live return since the alert
+        since = prices.pct_return(alert_price, last)
+        peak = prices.peak_return(hist, adate, alert_price)
         rets = {}
         for label, days in WINDOWS:
             if (today - adate).days >= days:
@@ -68,6 +69,8 @@ def price_and_score(db, source, today, rows, stats):
             upd["alert_price"] = round(alert_price, 4)
         if last is not None:
             upd["last_price"] = round(last, 4)
+        if peak is not None:
+            upd["ret_peak"] = round(peak, 2)
         if rets["1W"] is not None:
             upd["ret_1w"] = round(rets["1W"], 2)
         if rets["1M"] is not None:
@@ -79,7 +82,8 @@ def price_and_score(db, source, today, rows, stats):
         except Exception as exc:  # noqa: BLE001
             log.warning("update_performance failed for %s: %s", ticker, exc)
         results.append({"ticker": ticker, "alert_date": adate,
-                        "alert_type": r.get("alert_type"), "since": since, "rets": rets})
+                        "alert_type": r.get("alert_type"), "since": since,
+                        "peak": peak, "rets": rets})
         stats.inc("priced")
     return results
 
@@ -90,54 +94,62 @@ def _avg(vals):
 
 
 def build_recap(results, today, lookback, max_listed):
-    """Return (html_recap, x_text)."""
+    """Return (html_recap, x_text). Averages use current returns only; peak is
+    display-only context and is never aggregated."""
     n = len(results)
     since_avg = _avg([r["since"] for r in results])
-    since_cnt = sum(1 for r in results if r["since"] is not None)
     avgs = {lab: _avg([r["rets"][lab] for r in results]) for lab, _ in WINDOWS}
-    counts = {lab: sum(1 for r in results if r["rets"][lab] is not None) for lab, _ in WINDOWS}
 
-    summary = f"Tracking <b>{n} alert{'s' if n != 1 else ''}</b>"
-    if since_avg is not None:
-        summary += f" · since-alert avg <b>{_fmt_pct(since_avg)}</b>"
-    head = [f"📈 <b>Insider Alert Performance</b>",
+    head = ["📈 <b>Insider Alert Performance</b>",
             f"<i>as of {today.strftime('%b %-d, %Y')}</i>",
-            "",
-            summary,
             ""]
-    for lab, _ in WINDOWS:
-        head.append(f"{lab}: <b>{_fmt_pct(avgs[lab])}</b> avg ({counts[lab]})")
-    head.append("")
-    head.append("<i>Milestone returns fill in as alerts age: 1W after 7 days, "
-                "1M after 30, 3M after 90.</i>")
-    lines = head + ["", "<b>By alert</b>"]
+    summary = f"<b>{n} alert{'s' if n != 1 else ''}</b> tracked"
+    if since_avg is not None:
+        summary += f" · avg <b>{_fmt_pct(since_avg)}</b> since alert"
+    head.append(summary)
+    win_avg = " · ".join(f"<b>{lab}</b> avg {_fmt_pct(avgs[lab])}"
+                         for lab, _ in WINDOWS if avgs[lab] is not None)
+    if win_avg:
+        head.append(win_avg)
+    head += ["", "<i>1-week / 1-month / 3-month returns fill in as alerts age.</i>",
+             "", "<b>By alert</b>"]
+    lines = head
     shown = sorted(results,
                    key=lambda r: (r["since"] if r["since"] is not None else -1e9),
                    reverse=True)
     for r in shown[:max_listed]:
-        parts = []
-        if r["since"] is not None:
-            parts.append(f"since <b>{_fmt_pct(r['since'])}</b>")
-        for lab, _ in WINDOWS:
-            v = r["rets"][lab]
-            if v is not None:
-                parts.append(f"{lab} <b>{_fmt_pct(v)}</b>")
-        tail = " · ".join(parts) if parts else "<i>price n/a</i>"
-        lines.append(f"• ${escape_html(r['ticker'])} · {r['alert_date'].strftime('%b %-d')} · {tail}")
+        tk = escape_html(r["ticker"])
+        ad = r["alert_date"].strftime("%b %-d")
+        if r["since"] is None:
+            lines.append(f"• <b>${tk}</b> — alerted {ad} · <i>price n/a</i>")
+            continue
+        core = f"since {ad} <b>{_fmt_pct(r['since'])}</b>"
+        if r["peak"] is not None:
+            core += f", peaked at <b>{_fmt_pct(r['peak'])}</b>"
+        wins = [f"{lab} <b>{_fmt_pct(r['rets'][lab])}</b>"
+                for lab, _ in WINDOWS if r["rets"][lab] is not None]
+        if wins:
+            core += " · " + " · ".join(wins)
+        lines.append(f"• <b>${tk}</b> — {core}")
     if n > max_listed:
         lines.append(f"<i>… +{n - max_listed} more</i>")
 
-    movers = sorted(((r["since"], r["ticker"]) for r in results if r["since"] is not None),
-                    reverse=True)
-    top = " ".join(f"${t} {v:+.0f}%" for v, t in movers[:3])
+    movers = sorted(((r["since"], r["peak"], r["ticker"])
+                     for r in results if r["since"] is not None), reverse=True)
+    tops = []
+    for sv, pk, t in movers[:3]:
+        s = f"${t} {sv:+.0f}%"
+        if pk is not None:
+            s += f" (pk {pk:+.0f}%)"
+        tops.append(s)
     x_lines = [f"📈 Insider-buy alert track record ({n} alerts)"]
     if since_avg is not None:
-        x_lines.append(f"Since alert: avg {_fmt_pct(since_avg)} across {since_cnt}")
+        x_lines.append(f"Avg {_fmt_pct(since_avg)} since alert")
     seg = " | ".join(f"{lab} avg {_fmt_pct(avgs[lab])}" for lab, _ in WINDOWS if avgs[lab] is not None)
     if seg:
         x_lines.append(seg)
-    if top:
-        x_lines.append(f"Top: {top}")
+    if tops:
+        x_lines.append("Top: " + " ".join(tops))
     x_lines.append("Public filing data. Not investment advice.")
     return "\n".join(lines), "\n".join(x_lines)
 

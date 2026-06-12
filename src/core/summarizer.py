@@ -177,8 +177,6 @@ class Summarizer:
             _fmt_shares(f.get("shares")) + " sh @ " + _fmt_price(f.get("price")) +
             " = <b>" + _fmt_money(f.get("total_value")) + "</b>")
         reasons = []
-        if f.get("first_time"):
-            reasons.append("first recorded buy")
         if f.get("new_stake"):
             reasons.append("new stake")
         if f.get("conviction_ratio"):

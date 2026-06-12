@@ -196,6 +196,7 @@ create table if not exists alert_performance (
     ret_1w          numeric,
     ret_1m          numeric,
     ret_3m          numeric,
+    ret_peak        numeric,
     created_at      timestamptz not null default now(),
     updated_at      timestamptz not null default now()
 );
