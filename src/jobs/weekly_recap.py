@@ -180,9 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     pcfg = cfg.get("performance", {}) or {}
     lookback = pcfg.get("lookback_days", 90)
     max_listed = pcfg.get("max_listed", 40)
-    source = prices.StooqPriceSource(
-        url_template=pcfg.get("stooq_csv", "https://stooq.com/q/d/l/?s={symbol}&i=d"),
-        user_agent=cfg.secrets.sec_user_agent)
+    source = prices.make_source(cfg)
 
     today = now_utc().date()
     since = (today - timedelta(days=lookback)).isoformat()

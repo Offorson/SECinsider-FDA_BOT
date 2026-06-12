@@ -85,7 +85,7 @@ backfill:
   default_days: 90
 
 performance:
-  price_source: stooq                # free Stooq daily CSV endpoint; no API key
+  price_source: auto                 # auto = Yahoo chart API (free, like yfinance) then Stooq fallback
   stooq_csv: "https://stooq.com/q/d/l/?s={symbol}&i=d"
   recap_channel: sec_paid            # channel the weekly performance recap posts to
   lookback_days: 90                  # recap covers alerts up to this old (= max window)
