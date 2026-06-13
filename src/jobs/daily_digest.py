@@ -14,6 +14,7 @@ Exit 0 normally; 1 only on Supabase outage.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import logging
 import sys
 from datetime import datetime, timedelta
@@ -30,7 +31,12 @@ log = logging.getLogger("daily_digest")
 DIGEST_WINDOW_DAYS = 30
 
 
-def _build_fda_digest(db, today) -> str | None:
+def _build_fda_digest(db, today) -> tuple[str, str] | None:
+    """Return (html, fingerprint) for the upcoming-catalysts digest, or None.
+
+    The fingerprint is a hash of the catalyst SET (date/ticker/type) so the digest
+    is only re-sent when that set actually changes — not re-posted unchanged daily.
+    """
     cats = db.get_upcoming_catalysts()
     horizon = today + timedelta(days=DIGEST_WINDOW_DAYS)
     upcoming = []
@@ -47,26 +53,40 @@ def _build_fda_digest(db, today) -> str | None:
     if not upcoming:
         return None
     upcoming.sort(key=lambda x: x[0])
+    sig = "|".join(f"{d.isoformat()}:{(c.get('ticker') or '?')}:{(c.get('catalyst_type') or '')}"
+                   for d, c in upcoming)
+    fp = hashlib.sha1(sig.encode("utf-8")).hexdigest()[:12]
     lines = [f"🗓️ <b>Upcoming Catalysts · Next {DIGEST_WINDOW_DAYS} Days</b>", ""]
     for d, c in upcoming:
         drug = f" {escape_html(c['drug'])}" if c.get("drug") else ""
         lines.append(f"• <b>{d.strftime('%b %-d')}</b> — "
                      f"${escape_html(c.get('ticker') or '?')}{drug} "
                      f"<i>{escape_html(c.get('catalyst_type') or '')}</i>")
-    return "\n".join(lines)
+    return "\n".join(lines), fp
 
 
-def _build_sec_digest(db) -> str | None:
+def _build_sec_digest(db) -> tuple[str, str] | None:
+    """Return (html, fingerprint) for the active-cluster digest, or None.
+
+    Fingerprint hashes each cluster's ticker + member_count, so the digest only
+    re-posts when a cluster appears, disappears, or its insider count changes —
+    never the same snapshot day after day. (combined_value is intentionally NOT
+    in the fingerprint: it drifts as old buys age out of the window without any
+    new buying, which would cause spurious re-posts.)
+    """
     clusters = db.get_active_clusters()
     if not clusters:
         return None
     clusters.sort(key=lambda c: -(c.get("combined_value") or 0))
+    sig = "|".join(sorted(f"{(c.get('ticker') or '?')}:{c.get('member_count')}"
+                          for c in clusters))
+    fp = hashlib.sha1(sig.encode("utf-8")).hexdigest()[:12]
     lines = ["📊 <b>Active Insider Clusters</b>", ""]
     for c in clusters:
         lines.append(f"• <b>${escape_html(c.get('ticker') or '?')}</b> — "
                      f"{c.get('member_count')} insiders · "
                      f"<b>${(c.get('combined_value') or 0):,.0f}</b> combined")
-    return "\n".join(lines)
+    return "\n".join(lines), fp
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -115,14 +135,16 @@ def main(argv: list[str] | None = None) -> int:
 
     fda_digest = _build_fda_digest(db, today)
     if fda_digest:
-        if fda_disp.dispatch(f"fda:digest:{today}", "digest",
-                             ch["fda_paid"], ch["fda_free"], fda_digest):
+        fda_html, fda_fp = fda_digest
+        if fda_disp.dispatch(f"fda:digest:{fda_fp}", "digest",
+                             ch["fda_paid"], ch["fda_free"], fda_html):
             stats.inc("fda_digest")
 
     sec_digest = _build_sec_digest(db)
     if sec_digest:
-        if sec_disp.dispatch(f"sec:digest:{today}", "digest",
-                             ch["sec_paid"], ch["sec_free"], sec_digest):
+        sec_html, sec_fp = sec_digest
+        if sec_disp.dispatch(f"sec:digest:{sec_fp}", "digest",
+                             ch["sec_paid"], ch["sec_free"], sec_html):
             stats.inc("sec_digest")
 
     stats.log()
