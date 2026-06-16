@@ -219,6 +219,7 @@ class FdaCatalystFeed:
 
             facts = {
                 "ticker": ticker, "title": item.title, "link": item.link,
+                "catalyst_type": ctype,
                 "matched": matched or [k for k in self.keywords if k in text.lower()],
                 "needs_review": needs_review,
             }

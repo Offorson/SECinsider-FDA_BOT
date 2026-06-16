@@ -32,6 +32,21 @@ _FACTUAL_GUARD = (
     "'opportunity', 'should', or 'buy'. Plain factual statements only."
 )
 
+# Plain-English explanation of each catalyst type, shown in press alerts so a
+# reader who doesn't know the jargon understands what the headline implies.
+# Factual descriptions of the regulatory step only — no outlook, no advice.
+_CATALYST_GLOSS = {
+    "PDUFA": ("The FDA has accepted or is reviewing this drug application; an "
+              "approve-or-decline decision will come on a target (PDUFA) date. "
+              "This is not an approval yet."),
+    "AdCom": ("An FDA advisory committee will publicly review this drug and vote. "
+              "The vote advises the FDA but is non-binding."),
+    "Approval": "The FDA has approved this drug.",
+    "CRL": ("The FDA declined to approve this drug in its current form "
+            "(Complete Response Letter)."),
+    "Readout": "Clinical-trial results have been reported.",
+}
+
 
 def _fmt_money(value: Optional[float]) -> str:
     if value is None:
@@ -176,16 +191,6 @@ class Summarizer:
         lines.append(
             _fmt_shares(f.get("shares")) + " sh @ " + _fmt_price(f.get("price")) +
             " = <b>" + _fmt_money(f.get("total_value")) + "</b>")
-        reasons = []
-        if f.get("new_stake"):
-            reasons.append("new stake")
-        if f.get("conviction_ratio"):
-            try:
-                reasons.append(f"{float(f['conviction_ratio']):.2f}x prior stake")
-            except (TypeError, ValueError):
-                pass
-        if reasons:
-            lines.append("<i>" + escape_html(" · ".join(reasons)) + "</i>")
         if f.get("catalyst_note"):
             lines.append("")
             lines.append(escape_html(f["catalyst_note"]))
@@ -202,6 +207,10 @@ class Summarizer:
         if ticker:
             head = f"📰 <b>${escape_html(ticker)}</b> · FDA / Catalyst News"
         lines = [head, "", title]
+        note = _CATALYST_GLOSS.get(str(f.get("catalyst_type") or ""))
+        if note:
+            lines.append("")
+            lines.append("<i>What this means:</i> " + escape_html(note))
         if f.get("catalyst_note"):
             lines.append("")
             lines.append(escape_html(f["catalyst_note"]))

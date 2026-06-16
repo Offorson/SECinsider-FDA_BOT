@@ -285,6 +285,13 @@ mechanism with a `:free` key suffix.
 * **One active cluster per ticker** (DB partial unique index). New insiders joining fire
   an "upgrade" alert; standalone large-buy alerts are suppressed for a ticker that
   already has an active cluster (it would be redundant).
+* **Daily digests dedup on content, not date.** The SEC active-cluster digest and the FDA
+  upcoming-catalyst digest key their `alerts_sent` dedup record on a hash of the underlying
+  set (SEC: each cluster's `ticker:member_count`; FDA: each catalyst's `date:ticker:type`),
+  not on `{today}`. So a digest is only posted when that set actually changes — it no longer
+  re-sends the identical snapshot every day. `combined_value` is deliberately excluded from
+  the SEC hash because it drifts as old buys age out of the window without any new buying,
+  which would otherwise cause spurious re-posts.
 * **Backfill seeds existing clusters silently** (records them as already-alerted) so your
   first live run doesn't flood you with stale clusters — you only get upgrades going
   forward.
