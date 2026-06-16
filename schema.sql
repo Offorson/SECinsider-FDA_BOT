@@ -204,5 +204,23 @@ create index if not exists idx_alertperf_ticker on alert_performance (ticker);
 create index if not exists idx_alertperf_date on alert_performance (alert_date);
 
 -- =============================================================================
+--  Row-level security.
+--  The bot is a trusted backend that connects with the SERVICE ROLE key, which
+--  BYPASSES RLS. We enable RLS on every public table and add NO policies, so the
+--  publicly-exposed PostgREST API (anon / authenticated roles) is denied all
+--  access by default, while the bot keeps full access. This seals the REST API
+--  without affecting the bot. (Satisfies Supabase "RLS Disabled in Public".)
+-- =============================================================================
+alter table filings            enable row level security;
+alter table insider_buys       enable row level security;
+alter table clusters           enable row level security;
+alter table catalysts          enable row level security;
+alter table ct_trials          enable row level security;
+alter table press_seen         enable row level security;
+alter table alerts_sent        enable row level security;
+alter table delayed_queue      enable row level security;
+alter table alert_performance  enable row level security;
+
+-- =============================================================================
 --  End of schema.
 -- =============================================================================

@@ -295,6 +295,12 @@ mechanism with a `:free` key suffix.
 * **Backfill seeds existing clusters silently** (records them as already-alerted) so your
   first live run doesn't flood you with stale clusters — you only get upgrades going
   forward.
+* **RLS enabled on every public table, with no policies.** The bot is a trusted backend
+  that connects with the Supabase **service_role** key, which bypasses RLS. Enabling RLS
+  with zero policies denies the publicly-exposed PostgREST API (anon/authenticated) all
+  access by default while the bot keeps full access — sealing the REST API without any code
+  change. Chosen over leaving RLS off (the database has no per-user rows to protect; the
+  goal is simply to block the public API). See the RLS block at the end of `schema.sql`.
 * **Channel IDs via `${ENV}`** — not technically secret, but referenced from env so they
   stay out of the public repo.
 * **Reminders only for `day`-precision dates**; month/quarter catalysts are too imprecise
